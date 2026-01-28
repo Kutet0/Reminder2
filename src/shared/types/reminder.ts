@@ -31,6 +31,8 @@ export interface UpdateReminderInput {
     dateTime?: string;
     category?: ReminderCategory;
     completed?: boolean;
+    googleEventId?: string;
+    snoozedUntil?: string; // Ajoutons aussi snoozedUntil pour être complet
 }
 
 export interface ReminderStats {

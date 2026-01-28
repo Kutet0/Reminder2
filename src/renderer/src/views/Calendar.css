@@ -6,9 +6,12 @@
 
 .calendar-header {
     margin-bottom: var(--spacing-xl);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.calendar-header h1 {
+.calendar-title-group h1 {
     font-size: 2rem;
     margin-bottom: var(--spacing-xs);
 }
@@ -16,4 +19,154 @@
 .calendar-subtitle {
     font-size: 1rem;
     color: var(--slate-400);
+}
+
+/* Contrôles de navigation (Mois précédent/suivant) */
+.calendar-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--slate-800);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--slate-700);
+}
+
+.calendar-controls h2 {
+    min-width: 140px;
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Grille du calendrier */
+.calendar-container {
+    background: var(--slate-800);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--slate-700);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xl);
+}
+
+.week-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--slate-900);
+    border-bottom: 1px solid var(--slate-700);
+}
+
+.week-day {
+    padding: var(--spacing-md);
+    text-align: center;
+    font-weight: 600;
+    color: var(--slate-400);
+    text-transform: capitalize;
+}
+
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    /* Hauteur minimale pour chaque rangée de jours */
+    background: var(--slate-700);
+    /* Couleur des lignes de grille */
+    gap: 1px;
+    /* Crée les lignes de séparation */
+}
+
+.calendar-day {
+    background: var(--slate-800);
+    min-height: 120px;
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-day:hover {
+    background: var(--slate-750);
+}
+
+.calendar-day.other-month {
+    background: var(--slate-850);
+    color: var(--slate-600);
+}
+
+.calendar-day.other-month:hover {
+    background: var(--slate-800);
+}
+
+.calendar-day.today {
+    background: rgba(99, 102, 241, 0.1);
+    /* Indigo tint */
+}
+
+.day-number {
+    font-weight: 600;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: var(--spacing-xs);
+}
+
+.calendar-day.today .day-number {
+    background: var(--indigo-500);
+    color: white;
+}
+
+/* Indicateurs de rappels */
+.day-reminders {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+    max-height: 80px;
+}
+
+.mini-reminder {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: var(--slate-700);
+    color: var(--slate-200);
+    border-left: 2px solid var(--slate-500);
+}
+
+/* Couleurs par catégorie pour les mini rappels - Exemple */
+.mini-reminder.personal {
+    border-left-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.mini-reminder.work {
+    border-left-color: #6366f1;
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.mini-reminder.health {
+    border-left-color: #ec4899;
+    background: rgba(236, 72, 153, 0.1);
+}
+
+/* Panneau de détails du jour sélectionné */
+.selected-day-details {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

@@ -8,7 +8,7 @@ import { Button } from '../components/ui/Button';
 import { useSettings } from '../hooks/useSettings';
 import './Settings.css';
 
-export const Settings: React.FC = () => {
+export const Settings = () => {
     const { settings, loading, updateSettings } = useSettings();
 
     if (loading || !settings) {
@@ -109,15 +109,106 @@ export const Settings: React.FC = () => {
                 <Card padding="lg">
                     <h2 className="settings-section-title">🔄 Synchronisation Google Calendar</h2>
 
-                    <div className="setting-item">
-                        <div className="setting-info">
-                            <h3>Google Calendar</h3>
-                            <p>Synchronisez vos événements Google Calendar</p>
-                        </div>
-                        <Button variant="secondary">
-                            Se connecter
+                    <div className="setting-description" style={{ marginBottom: '20px', color: 'var(--slate-400)', fontSize: '0.9rem' }}>
+                        Pour synchroniser vos rappels avec Google Calendar, vous devez fournir vos propres identifiants API (Client ID et Client Secret).
+                        <br />
+                        <a href="#" style={{ color: 'var(--primary-400)', textDecoration: 'underline' }}>Comment obtenir ces clés ?</a>
+                    </div>
+
+                    <div className="setting-item-column" style={{ marginBottom: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Client ID</label>
+                        <input
+                            type="text"
+                            className="settings-input"
+                            value={settings.sync.googleCalendar.clientId || ''}
+                            onChange={(e) => {
+                                updateSettings({
+                                    sync: {
+                                        ...settings.sync,
+                                        googleCalendar: {
+                                            ...settings.sync.googleCalendar,
+                                            clientId: e.target.value
+                                        }
+                                    }
+                                });
+                            }}
+                            placeholder="Ex: 123456789-abcde.apps.googleusercontent.com"
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                borderRadius: '8px',
+                                background: 'var(--slate-900)',
+                                border: '1px solid var(--slate-700)',
+                                color: 'var(--slate-100)',
+                                outline: 'none'
+                            }}
+                        />
+                    </div>
+
+                    <div className="setting-item-column" style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Client Secret</label>
+                        <input
+                            type="password"
+                            className="settings-input"
+                            value={settings.sync.googleCalendar.clientSecret || ''}
+                            onChange={(e) => {
+                                updateSettings({
+                                    sync: {
+                                        ...settings.sync,
+                                        googleCalendar: {
+                                            ...settings.sync.googleCalendar,
+                                            clientSecret: e.target.value
+                                        }
+                                    }
+                                });
+                            }}
+                            placeholder="Ex: GOCSPX-..."
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                borderRadius: '8px',
+                                background: 'var(--slate-900)',
+                                border: '1px solid var(--slate-700)',
+                                color: 'var(--slate-100)',
+                                outline: 'none'
+                            }}
+                        />
+                    </div>
+
+                    <div className="setting-actions" style={{ display: 'flex', gap: '10px' }}>
+                        <Button variant="primary" onClick={async () => {
+                            try {
+                                const success = await window.electronAPI.calendar.authenticate();
+                                if (success) {
+                                    alert('Connexion réussie à Google Calendar !');
+                                    // Recharger les settings pour voir la mise à jour (si besoin) à faire plus tard
+                                } else {
+                                    alert('La connexion a échoué ou a été annulée.');
+                                }
+                            } catch (error) {
+                                console.error(error);
+                                alert('Erreur lors de la connexion : ' + error);
+                            }
+                        }}>
+                            Se connecter à Google
+                        </Button>
+                        <Button variant="ghost" onClick={async () => {
+                            try {
+                                await window.electronAPI.calendar.disconnect();
+                                alert('Déconnecté de Google Calendar.');
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }}>
+                            Se déconnecter
                         </Button>
                     </div>
+
+                    {settings.sync.googleCalendar.lastSync && (
+                        <p style={{ marginTop: '15px', fontSize: '0.8rem', color: 'var(--slate-500)' }}>
+                            Dernière synchro : {new Date(settings.sync.googleCalendar.lastSync).toLocaleString()}
+                        </p>
+                    )}
                 </Card>
             </div>
         </div>

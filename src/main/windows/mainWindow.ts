@@ -13,8 +13,8 @@ export function createMainWindow(): BrowserWindow {
         minWidth: WINDOW_CONFIG.MAIN.minWidth,
         minHeight: WINDOW_CONFIG.MAIN.minHeight,
         frame: false, // Sans bordure pour barre de titre personnalisée
-        transparent: true, // Pour le glassmorphism
-        backgroundColor: '#00000000',
+        transparent: false, // Désactiver la transparence (fond opaque)
+        backgroundColor: '#0f172a', // Couleur Slate-900 opaque
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,

@@ -26,6 +26,8 @@ export interface NotificationSettings {
 export interface SyncSettings {
     googleCalendar: {
         enabled: boolean;
+        clientId?: string;
+        clientSecret?: string;
         autoSync: boolean;
         syncInterval: number; // Minutes
         lastSync?: string; // ISO 8601

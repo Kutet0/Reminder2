@@ -99,3 +99,25 @@
 .toggle input:checked+.toggle-slider:before {
     transform: translateX(24px);
 }
+
+/* Inputs Settings */
+.settings-input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--slate-900);
+    border: 1px solid var(--slate-700);
+    color: var(--slate-100);
+    outline: none;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.settings-input:focus {
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.settings-input::placeholder {
+    color: var(--slate-600);
+}

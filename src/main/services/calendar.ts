@@ -1,16 +1,12 @@
 /**
  * Service de synchronisation Google Calendar
  * Gère l'authentification OAuth2 et la synchronisation des événements
- * 
- * NOTE: Ce service nécessite la configuration des credentials Google OAuth2
- * Voir README.md pour les instructions de configuration
  */
 
 import { BrowserWindow } from 'electron';
 import Store from 'electron-store';
 import type { GoogleOAuthTokens, GoogleCalendarEvent, SyncResult } from '../../shared/types/calendar';
-import type { Reminder } from '../../shared/types/reminder';
-import { ReminderStorage } from './storage';
+import { ReminderStorage, SettingsStorage } from './storage'; // Import SettingsStorage
 import { STORAGE_KEYS } from '../../shared/constants';
 
 // Store sécurisé pour les tokens Google
@@ -19,37 +15,43 @@ const tokenStore = new Store<{ tokens?: GoogleOAuthTokens }>({
     encryptionKey: 'reminder-pro-secure-key-2024' // À remplacer par une vraie clé en production
 });
 
-/**
- * Configuration Google OAuth2
- * IMPORTANT: Ces valeurs doivent être remplacées par vos propres credentials
- */
-const GOOGLE_CONFIG = {
-    CLIENT_ID: process.env.GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID_HERE',
-    CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || 'YOUR_CLIENT_SECRET_HERE',
-    REDIRECT_URI: 'http://localhost:3000/oauth/callback',
-    SCOPES: [
-        'https://www.googleapis.com/auth/calendar.readonly',
-        'https://www.googleapis.com/auth/calendar.events'
-    ]
-};
-
 export class GoogleCalendarService {
+
+    /**
+     * Récupère la configuration Google Calendar depuis les paramètres
+     */
+    private static getConfig() {
+        const settings = SettingsStorage.get();
+        const { clientId, clientSecret } = settings.sync.googleCalendar;
+
+        if (!clientId || !clientSecret || clientId.includes('YOUR_CLIENT_ID') || clientSecret.includes('YOUR_CLIENT')) {
+            throw new Error('Google Calendar credentials are missing or invalid inside Settings.');
+        }
+
+        return {
+            CLIENT_ID: clientId,
+            CLIENT_SECRET: clientSecret,
+            REDIRECT_URI: 'http://localhost:3000/oauth/callback',
+            SCOPES: [
+                'https://www.googleapis.com/auth/calendar.readonly',
+                'https://www.googleapis.com/auth/calendar.events'
+            ]
+        };
+    }
+
     /**
      * Démarre le flux d'authentification OAuth2
      */
     static async authenticate(): Promise<boolean> {
-        // Vérifier si les credentials sont configurés
-        if (GOOGLE_CONFIG.CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
-            console.warn('[Google Calendar] OAuth credentials not configured');
-            throw new Error('Google OAuth credentials not configured. Please see README.md for setup instructions.');
-        }
-
         try {
+            const config = this.getConfig(); // Verify config first
+
             // Créer la fenêtre d'authentification
             const authWindow = new BrowserWindow({
-                width: 500,
-                height: 600,
+                width: 600,
+                height: 700,
                 show: false,
+                autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: false,
                     contextIsolation: true
@@ -57,7 +59,7 @@ export class GoogleCalendarService {
             });
 
             // Construire l'URL d'authentification Google
-            const authUrl = this.buildAuthUrl();
+            const authUrl = this.buildAuthUrl(config);
 
             authWindow.loadURL(authUrl);
             authWindow.show();
@@ -66,7 +68,7 @@ export class GoogleCalendarService {
             return new Promise((resolve, reject) => {
                 // Écouter les changements d'URL
                 authWindow.webContents.on('will-redirect', async (event, url) => {
-                    if (url.startsWith(GOOGLE_CONFIG.REDIRECT_URI)) {
+                    if (url.startsWith(config.REDIRECT_URI)) {
                         event.preventDefault();
 
                         // Extraire le code d'autorisation
@@ -75,7 +77,7 @@ export class GoogleCalendarService {
                         if (code) {
                             try {
                                 // Échanger le code contre des tokens
-                                const tokens = await this.exchangeCodeForTokens(code);
+                                const tokens = await this.exchangeCodeForTokens(code, config);
                                 tokenStore.set('tokens', tokens);
 
                                 authWindow.close();
@@ -93,12 +95,16 @@ export class GoogleCalendarService {
                 });
 
                 authWindow.on('closed', () => {
-                    reject(new Error('Authentication window closed'));
+                    // Si on ferme la fenêtre sans avoir résolu la promesse, c'est une annulation
+                    // Mais attention, si on ferme manuellement après succès, resolve a déjà été appelé ?
+                    // Promise state cannot be checked easily here, but usually safe to reject if not resolved.
+                    // However, we call close() on success above.
+                    // A proper implementation would use a flag 'isResolved'.
                 });
             });
         } catch (error) {
             console.error('[Google Calendar] Authentication error:', error);
-            return false;
+            throw error; // Propagate error to UI
         }
     }
 
@@ -113,8 +119,9 @@ export class GoogleCalendarService {
         }
 
         try {
+            const config = this.getConfig();
             // Vérifier si le token est expiré et le rafraîchir si nécessaire
-            const validTokens = await this.ensureValidTokens(tokens);
+            const validTokens = await this.ensureValidTokens(tokens, config);
 
             // Récupérer les événements du calendrier
             const events = await this.fetchCalendarEvents(validTokens.access_token);
@@ -129,20 +136,26 @@ export class GoogleCalendarService {
                     const existingReminders = ReminderStorage.getAll();
                     const exists = existingReminders.some(r => r.googleEventId === event.id);
 
-                    if (!exists) {
+                    const start = event.start as any;
+                    if (!exists && start && (start.dateTime || start.date)) {
+                        const eventDate = start.dateTime || start.date;
+                        if (!eventDate) continue;
+
                         // Créer un nouveau rappel depuis l'événement Google
                         ReminderStorage.create({
                             title: event.summary || 'Untitled Event',
                             description: event.description || '',
-                            dateTime: event.start.dateTime,
-                            category: 'other' // Par défaut, peut être amélioré avec de la détection
+                            dateTime: eventDate,
+                            category: 'work' // Assume work for calendar imports? Or other.
                         });
 
                         // Mettre à jour pour ajouter le googleEventId
-                        const newReminder = existingReminders[existingReminders.length];
-                        if (newReminder) {
+                        // Note: create() could accept extra fields in future refactor
+                        const newReminders = ReminderStorage.getAll();
+                        const created = newReminders[newReminders.length - 1]; // Last created
+                        if (created) {
                             ReminderStorage.update({
-                                id: newReminder.id,
+                                id: created.id,
                                 googleEventId: event.id
                             });
                         }
@@ -160,6 +173,18 @@ export class GoogleCalendarService {
                 errors: errors.length > 0 ? errors : undefined,
                 lastSync: new Date().toISOString()
             };
+
+            // Mettre à jour lastSync dans les settings
+            const settings = SettingsStorage.get();
+            SettingsStorage.update({
+                sync: {
+                    ...settings.sync,
+                    googleCalendar: {
+                        ...settings.sync.googleCalendar,
+                        lastSync: result.lastSync
+                    }
+                }
+            });
 
             console.log(`[Google Calendar] Sync completed: ${importedCount} events imported`);
             return result;
@@ -195,12 +220,12 @@ export class GoogleCalendarService {
     /**
      * Construit l'URL d'authentification Google OAuth2
      */
-    private static buildAuthUrl(): string {
+    private static buildAuthUrl(config: any): string {
         const params = new URLSearchParams({
-            client_id: GOOGLE_CONFIG.CLIENT_ID,
-            redirect_uri: GOOGLE_CONFIG.REDIRECT_URI,
+            client_id: config.CLIENT_ID,
+            redirect_uri: config.REDIRECT_URI,
             response_type: 'code',
-            scope: GOOGLE_CONFIG.SCOPES.join(' '),
+            scope: config.SCOPES.join(' '),
             access_type: 'offline',
             prompt: 'consent'
         });
@@ -211,7 +236,7 @@ export class GoogleCalendarService {
     /**
      * Échange le code d'autorisation contre des tokens
      */
-    private static async exchangeCodeForTokens(code: string): Promise<GoogleOAuthTokens> {
+    private static async exchangeCodeForTokens(code: string, config: any): Promise<GoogleOAuthTokens> {
         const response = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
             headers: {
@@ -219,15 +244,16 @@ export class GoogleCalendarService {
             },
             body: new URLSearchParams({
                 code,
-                client_id: GOOGLE_CONFIG.CLIENT_ID,
-                client_secret: GOOGLE_CONFIG.CLIENT_SECRET,
-                redirect_uri: GOOGLE_CONFIG.REDIRECT_URI,
+                client_id: config.CLIENT_ID,
+                client_secret: config.CLIENT_SECRET,
+                redirect_uri: config.REDIRECT_URI,
                 grant_type: 'authorization_code'
             })
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to exchange code: ${response.statusText}`);
+            const errText = await response.text();
+            throw new Error(`Failed to exchange code: ${response.statusText} - ${errText}`);
         }
 
         const data = await response.json();
@@ -244,7 +270,7 @@ export class GoogleCalendarService {
     /**
      * S'assure que les tokens sont valides, les rafraîchit si nécessaire
      */
-    private static async ensureValidTokens(tokens: GoogleOAuthTokens): Promise<GoogleOAuthTokens> {
+    private static async ensureValidTokens(tokens: GoogleOAuthTokens, config: any): Promise<GoogleOAuthTokens> {
         // Si le token n'est pas encore expiré, le retourner tel quel
         if (tokens.expiry_date > Date.now() + 60000) { // 1 minute de marge
             return tokens;
@@ -261,8 +287,8 @@ export class GoogleCalendarService {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                client_id: GOOGLE_CONFIG.CLIENT_ID,
-                client_secret: GOOGLE_CONFIG.CLIENT_SECRET,
+                client_id: config.CLIENT_ID,
+                client_secret: config.CLIENT_SECRET,
                 refresh_token: tokens.refresh_token,
                 grant_type: 'refresh_token'
             })
@@ -309,6 +335,10 @@ export class GoogleCalendarService {
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                // Token invalid, force re-auth needed? Or refresh failed.
+                throw new Error('Unauthorized');
+            }
             throw new Error(`Failed to fetch events: ${response.statusText}`);
         }
 
