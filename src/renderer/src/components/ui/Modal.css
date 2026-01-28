@@ -1,0 +1,119 @@
+/**
+ * Styles pour le Modal
+ */
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+}
+
+.modal-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--backdrop-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    z-index: 9999;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-sm {
+    width: 90%;
+    max-width: 400px;
+    margin-left: -45%;
+    margin-top: -42.5vh;
+}
+
+.modal-md {
+    width: 90%;
+    max-width: 600px;
+    margin-left: -45%;
+    margin-top: -42.5vh;
+}
+
+.modal-lg {
+    width: 90%;
+    max-width: 800px;
+    margin-left: -45%;
+    margin-top: -42.5vh;
+}
+
+@media (min-width: 640px) {
+    .modal-sm {
+        margin-left: -200px;
+    }
+
+    .modal-md {
+        margin-left: -300px;
+    }
+
+    .modal-lg {
+        margin-left: -400px;
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xl);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--slate-50);
+    margin: 0;
+}
+
+.modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--slate-400);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--slate-100);
+}
+
+.modal-body {
+    padding: var(--spacing-xl);
+}
+
+/* Scrollbar pour le modal */
+.modal-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-container::-webkit-scrollbar-thumb {
+    background: var(--slate-700);
+    border-radius: var(--radius-lg);
+}
+
+.modal-container::-webkit-scrollbar-thumb:hover {
+    background: var(--slate-600);
+}

@@ -1,0 +1,136 @@
+/**
+ * Styles pour Reminders
+ */
+
+.reminders {
+    padding: var(--spacing-xl);
+    height: 100%;
+    overflow-y: auto;
+}
+
+.reminders-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xl);
+}
+
+.reminders-header h1 {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.reminders-subtitle {
+    font-size: 1rem;
+    color: var(--slate-400);
+}
+
+/* Filters */
+.reminders-filters {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+.filter-btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--glass-bg-light);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    color: var(--slate-300);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.filter-btn:hover {
+    background: var(--glass-bg);
+    color: var(--slate-100);
+}
+
+.filter-btn-active {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: white;
+}
+
+/* Reminders List */
+.reminders-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.reminder-card {
+    padding: var(--spacing-lg) !important;
+}
+
+.reminder-card-completed {
+    opacity: 0.6;
+}
+
+.reminder-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+}
+
+.reminder-card-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--slate-400);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--slate-100);
+}
+
+.action-btn-success:hover {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.action-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.reminder-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.reminder-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--slate-100);
+}
+
+.reminder-card-description {
+    font-size: 0.9375rem;
+    color: var(--slate-400);
+    line-height: 1.6;
+}
+
+.reminder-card-time {
+    font-size: 0.875rem;
+    color: var(--primary-400);
+    font-weight: 500;
+    margin-top: var(--spacing-xs);
+}

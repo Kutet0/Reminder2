@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        .notification {
+            width: 100%;
+            height: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+            color: white;
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .notification-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .notification-close {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .notification-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 16px;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .notification-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .notification-btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .notification-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="notification-root" class="notification">
+        <div class="notification-header">
+            <div class="notification-title">🔔 Rappel</div>
+            <button class="notification-close" onclick="window.close()">×</button>
+        </div>
+        <div class="notification-description" id="notification-description">
+            Chargement...
+        </div>
+        <div class="notification-actions">
+            <button class="notification-btn notification-btn-secondary" onclick="snooze()">
+                ⏰ Reporter (5 min)
+            </button>
+            <button class="notification-btn notification-btn-primary" onclick="complete()">
+                ✓ Terminé
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentReminder = null;
+
+        window.electronAPI.notifications.onNotification((reminder) => {
+            currentReminder = reminder;
+            document.getElementById('notification-description').textContent =
+                reminder.title + (reminder.description ? ` - ${reminder.description}` : '');
+        });
+
+        function snooze() {
+            if (currentReminder) {
+                window.electronAPI.notifications.snooze(currentReminder.id, 5);
+                window.close();
+            }
+        }
+
+        function complete() {
+            if (currentReminder) {
+                window.electronAPI.notifications.complete(currentReminder.id);
+                window.close();
+            }
+        }
+    </script>
+</body>
+
+</html>

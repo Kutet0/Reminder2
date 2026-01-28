@@ -1,0 +1,78 @@
+/**
+ * Styles pour le composant Input
+ */
+
+.input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.input-full-width {
+    width: 100%;
+}
+
+.input-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--slate-200);
+    margin-bottom: var(--spacing-xs);
+}
+
+.input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-family: var(--font-family);
+    font-size: 1rem;
+    color: var(--slate-100);
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(var(--backdrop-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    transition: all 0.2s ease-in-out;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input::placeholder {
+    color: var(--slate-500);
+}
+
+.input-with-icon {
+    padding-left: calc(var(--spacing-md) * 2.5);
+}
+
+.input-icon {
+    position: absolute;
+    left: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--slate-400);
+    pointer-events: none;
+}
+
+.input-error .input {
+    border-color: #ef4444;
+}
+
+.input-error .input:focus {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.input-error-text {
+    font-size: 0.875rem;
+    color: #ef4444;
+    margin-top: var(--spacing-xs);
+}

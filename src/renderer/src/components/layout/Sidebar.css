@@ -1,0 +1,52 @@
+/**
+ * Styles pour la Sidebar
+ */
+
+.sidebar {
+    width: 260px;
+    height: 100%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--backdrop-blur));
+    border-right: 1px solid var(--glass-border);
+    padding: var(--spacing-lg);
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    color: var(--slate-300);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    user-select: none;
+}
+
+.sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--slate-100);
+}
+
+.sidebar-link-active {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.sidebar-link-active:hover {
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.sidebar-link-text {
+    font-size: 0.9375rem;
+}
